@@ -1,0 +1,55 @@
+source        = $("#error-alert-template").html();
+errorTemplate = Handlebars.compile(source);
+
+var alertHandler = new function() {
+    this.selector = "#alerts";
+    this.count = 0;
+    this.add_alert = function(alert) {
+	$(this.selector).prepend(alert);
+	this.count += 1;
+    };
+
+};
+
+var swipeHandler = new function() {
+    this.error = function(data) {
+	var html = errorTemplate(data);
+	alertHandler.add_alert(html);
+    };
+};
+
+swipe_error = function(error) {
+    var val = errorTemplate(error);
+    add_alert(val);
+};
+
+$(document).ready(function () {
+    var ws;
+    var host = "localhost";
+    var port = "8888";
+    var uri = "/ws";
+    
+    ws = new WebSocket("ws://" + host + ":" + port + uri);
+    
+    ws.onmessage = function(evt) {
+	data = $.parseJSON(evt.data)
+	if (data.status === "error")
+	    swipeHandler.error(data);
+    };
+    
+    ws.onclose = function(evt) {
+    };
+    
+    ws.onopen = function(evt) {
+    };
+    
+});
+
+alertTimeout = function (wait, obj){
+    setTimeout(function(){
+        obj.fadeOut(1000, function() { $(this).remove()});
+    }, wait);
+};
+
+
+
